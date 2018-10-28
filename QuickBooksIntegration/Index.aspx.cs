@@ -38,10 +38,8 @@ namespace QuickBooksIntegration
         private string incoming_state = "";
         private string realmId = "";
 
-
         protected void Page_Load(object sender, EventArgs e)
         {
-
             if (Session["accessToken"] == null)
             {
                 connect.Visible = true;
@@ -782,9 +780,10 @@ namespace QuickBooksIntegration
 
         #endregion methods for Oauth2
 
-        #endregion
+        #endregion OAuthMethods
 
         #region ApplicationMethods
+
         protected void btnGetPayments_Click(object sender, EventArgs e)
         {
             try
@@ -797,7 +796,6 @@ namespace QuickBooksIntegration
                     gvwCustomerPayments.DataBind();
                 }
                 return;
-
 
                 // send the UserInfo endpoint request
                 HttpWebRequest userinfoRequest = (HttpWebRequest)WebRequest.Create("https://sandbox-quickbooks.api.intuit.com/v3/company/123146130535274/query?minorversion=4");
@@ -861,11 +859,11 @@ namespace QuickBooksIntegration
             }
             catch (Exception ex)
             {
-
             }
             return paymentList;
         }
-        #endregion
+
+        #endregion ApplicationMethods
 
         protected void ddlModule_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -883,6 +881,7 @@ namespace QuickBooksIntegration
                 divCustomer.Visible = true;
             }
         }
+
         protected void ddlCustomerOptions_SelectedIndexChanged(object sender, EventArgs e)
         {
             lblMessage.Text = "";
@@ -912,6 +911,7 @@ namespace QuickBooksIntegration
                 divCustomers.Visible = true;
             }
         }
+
         public string GETQBAPICall(string uri)
         {
             string responseText = "";
@@ -937,6 +937,7 @@ namespace QuickBooksIntegration
             }
             return responseText;
         }
+
         public string POSTQBAPICall(string uri, string body)
         {
             string responseText = "";
@@ -970,10 +971,10 @@ namespace QuickBooksIntegration
             }
             catch (Exception ex)
             {
-
             }
             return responseText;
         }
+
         protected void btnCreateCustomer_Click(object sender, EventArgs e)
         {
             try
@@ -1019,6 +1020,7 @@ namespace QuickBooksIntegration
             {
             }
         }
+
         protected void btnGetCustomerById_Click(object sender, EventArgs e)
         {
             try
@@ -1051,11 +1053,11 @@ namespace QuickBooksIntegration
             {
             }
         }
+
         protected void btnUpdateCustomer_Click(object sender, EventArgs e)
         {
             try
             {
-
                 string CustomerId = txtUCCustomerId.Text;
                 string firstresponseText = "";
                 string firsturi = string.Format("https://{0}/v3/company/{1}/customer/{2}", qboBaseUrl, Session["realmId"], CustomerId);
@@ -1111,7 +1113,6 @@ namespace QuickBooksIntegration
                             responseText = POSTQBAPICall(uri, body);
                             if (responseText != null && responseText != "")
                             {
-
                             }
                         }
                     }
@@ -1125,11 +1126,11 @@ namespace QuickBooksIntegration
             {
             }
         }
+
         protected void btnCustomerDelete_Click(object sender, EventArgs e)
         {
             try
             {
-
                 string CustomerId = txtCDId.Text;
                 string firstresponseText = "";
                 string firsturi = string.Format("https://{0}/v3/company/{1}/customer/{2}", qboBaseUrl, Session["realmId"], CustomerId);
@@ -1161,7 +1162,6 @@ namespace QuickBooksIntegration
                             responseText = POSTQBAPICall(uri, body);
                             if (responseText != null && responseText != "")
                             {
-
                             }
                         }
                     }
@@ -1175,6 +1175,7 @@ namespace QuickBooksIntegration
             {
             }
         }
+
         protected void btnGetCustomers_Click(object sender, EventArgs e)
         {
             try
@@ -1188,9 +1189,8 @@ namespace QuickBooksIntegration
                 }
                 return;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-
             }
         }
 
@@ -1224,7 +1224,6 @@ namespace QuickBooksIntegration
             }
             catch (Exception ex)
             {
-
             }
             return customerList;
         }
