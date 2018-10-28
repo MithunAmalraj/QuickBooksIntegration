@@ -1,5 +1,5 @@
 ASP.NET 
-IMPORTANT: This repository hosts code and project management for ASP.NET With QuickBooks Integration developed by Quickbooks Developers team,
+**IMPORTANT**: This repository hosts code and project management for ASP.NET With QuickBooks Integration developed by Quickbooks Developers team,
 for use in ASP.NET applications. 
 
 **I have included a sample on how to work with modules like Customers,Customer Payments, etc.**
@@ -8,12 +8,9 @@ Modules:
 1. Customer
 2. Customer Payments
 
-Language: c#
-Web Technology: ASP.NET
-FRAMEWORK: .net Framework 4.6.1
-Authentication : OAuth 2.0
+Other modules wil be included.
 
-About this repo
+**About this repo**
 This repository is a test application used for ASP.NET Quickbooks Integration. 
 It is not intended to be a representative sample of how to use ASP.Net Quickbooks Integration with LIVE environment.
 
@@ -27,7 +24,14 @@ Before beginning, it may be helpful to have a basic understanding of OAuth 2.0 c
 
 **PreRequisites**
 
-.Net Framework 4.6.1
+Language: c#
+
+Web Technology: ASP.NET
+
+FRAMEWORK: .net Framework 4.6.1
+
+Authentication : OAuth 2.0
+
 
 **Setup**
 Clone this repository/Download the sample app.
