@@ -128,7 +128,7 @@ namespace QuickBooksIntegration
             }
         }
 
-        protected void ImgRevoke_Click(object sender, ImageClickEventArgs e)
+        protected void ImgRevoke_Click(object sender, EventArgs e)
         {
             if (Session["accessToken"] != null && Session["refreshToken"] != null)
             {
@@ -137,7 +137,7 @@ namespace QuickBooksIntegration
             }
         }
 
-        protected void ImgQBOAPICall_Click(object sender, ImageClickEventArgs e)
+        protected void ImgQBOAPICall_Click(object sender, EventArgs e)
         {
             if (Session["realmId"] != null)
             {
@@ -782,133 +782,55 @@ namespace QuickBooksIntegration
 
         #endregion OAuthMethods
 
-        #region ApplicationMethods
-
-        protected void btnGetPayments_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                List<CustomerPaymentListSummary> paymentList = new List<CustomerPaymentListSummary>();
-                paymentList = GetCustomerPayments();
-                if (paymentList != null && paymentList.Count > 0)
-                {
-                    gvwCustomerPayments.DataSource = paymentList;
-                    gvwCustomerPayments.DataBind();
-                }
-                return;
-
-                // send the UserInfo endpoint request
-                HttpWebRequest userinfoRequest = (HttpWebRequest)WebRequest.Create("https://sandbox-quickbooks.api.intuit.com/v3/company/123146130535274/query?minorversion=4");
-                userinfoRequest.Method = "GET";
-                userinfoRequest.Headers.Add(string.Format("Authorization: Bearer {0}", Session["accessToken"]));
-                userinfoRequest.Accept = "application/json";
-
-                // get the response
-                HttpWebResponse userinfoResponse = (HttpWebResponse)userinfoRequest.GetResponse();
-
-                using (var userinfoReader = new StreamReader(userinfoResponse.GetResponseStream()))
-                {
-                    //read response
-                    string responseText = userinfoReader.ReadToEnd();
-
-                    //If the user already exists in your database, initiate an application session for that user.
-                    //If the user does not exist in your user database, redirect the user to your new- user, sign - up flow.
-                    //You may be able to auto - register the user based on the information you receive from intuit.
-                    //Or at the very least you may be able to pre - populate many of the fields that you require on your registration form.
-
-                    //Decode userInfo response
-                }
-                output("Get User Info Call completed.");
-            }
-            catch (Exception ex)
-            {
-            }
-        }
-
-        public List<CustomerPaymentListSummary> GetCustomerPayments()
-        {
-            string responseText = "";
-            List<CustomerPaymentListSummary> paymentList = new List<CustomerPaymentListSummary>();
-            try
-            {
-                string query = "select * from payment startposition 1 maxresults 60";
-                // build the  request
-                string encodedQuery = WebUtility.UrlEncode(query);
-
-                //add qbobase url and query
-                string uri = string.Format("https://{0}/v3/company/{1}/query?query={2}", qboBaseUrl, Session["realmId"], encodedQuery);
-                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/customers/1/bank-accounts/";
-                // send the request
-                responseText = GETQBAPICall(uri);
-                if (responseText != null && responseText != "")
-                {
-                    CustomerPaymentListPaymentsRootObject PaymentObj = JsonConvert.DeserializeObject<CustomerPaymentListPaymentsRootObject>(responseText);
-
-                    foreach (var item in PaymentObj.QueryResponse.Payment)
-                    {
-                        CustomerPaymentListSummary paymentObj = new CustomerPaymentListSummary();
-                        paymentObj.Id = item.Id;
-                        paymentObj.CustomerName = item.CustomerRef.name;
-                        paymentObj.Amount = item.TotalAmt.ToString();
-                        paymentObj.TransactionDate = item.TxnDate;
-                        paymentList.Add(paymentObj);
-                    }
-                    gvwCustomerPayments.DataSource = paymentList;
-                    gvwCustomerPayments.DataBind();
-                }
-            }
-            catch (Exception ex)
-            {
-            }
-            return paymentList;
-        }
-
-        #endregion ApplicationMethods
-
         protected void ddlModule_SelectedIndexChanged(object sender, EventArgs e)
         {
             lblMessage.Text = "";
 
-            divCustommerPayments.Visible = false;
+            divPayment.Visible = false;
             divCustomer.Visible = false;
+            divAccount.Visible = false;
+            divVendor.Visible = false;
+            divBill.Visible = false;
+            divBillPayment.Visible = false;
+            divInvoice.Visible = false;
+            divPurchase.Visible = false;
+            divSalesReceipt.Visible = false;
 
-            if (ddlModule.SelectedValue == "CustomerPayment")
+            if (ddlModule.SelectedValue == "Payment")
             {
-                divCustommerPayments.Visible = true;
+                divPayment.Visible = true;
             }
             else if (ddlModule.SelectedValue == "Customer")
             {
                 divCustomer.Visible = true;
             }
-        }
-
-        protected void ddlCustomerOptions_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            lblMessage.Text = "";
-            divCreateCustomer.Visible = false;
-            divCustomerReadById.Visible = false;
-            divUpdateCustomer.Visible = false;
-            divCustomerDelete.Visible = false;
-
-            if (ddlCustomerOptions.SelectedValue == "CreateCustomer")
+            else if (ddlModule.SelectedValue == "Account")
             {
-                divCreateCustomer.Visible = true;
+                divAccount.Visible = true;
             }
-            if (ddlCustomerOptions.SelectedValue == "GetCustomerById")
+            else if (ddlModule.SelectedValue == "Vendor")
             {
-                divCustomerReadById.Visible = true;
+                divVendor.Visible = true;
             }
-            if (ddlCustomerOptions.SelectedValue == "CustomerUpdate")
+            else if (ddlModule.SelectedValue == "Bill")
             {
-                divUpdateCustomer.Visible = true;
+                divBill.Visible = true;
             }
-            if (ddlCustomerOptions.SelectedValue == "CustomerDelete")
+            else if (ddlModule.SelectedValue == "BillPayment")
             {
-                divCustomerDelete.Visible = true;
+                divBillPayment.Visible = true;
             }
-            if (ddlCustomerOptions.SelectedValue == "ReadAllCustomers")
+            else if (ddlModule.SelectedValue == "Invoice")
             {
-                divCustomers.Visible = true;
+                divInvoice.Visible = true;
+            }
+            else if (ddlModule.SelectedValue == "Purchase")
+            {
+                divPurchase.Visible = true;
+            }
+            else if (ddlModule.SelectedValue == "SalesReceipt")
+            {
+                divSalesReceipt.Visible = true;
             }
         }
 
@@ -969,10 +891,54 @@ namespace QuickBooksIntegration
                     }
                 }
             }
-            catch (Exception ex)
+            catch (WebException ex)
             {
+                using (WebResponse response = ex.Response)
+                {
+                    HttpWebResponse httpResponse = (HttpWebResponse)response;
+                    Console.WriteLine("Error code: {0}", httpResponse.StatusCode);
+                    using (Stream data = response.GetResponseStream())
+                    using (var reader = new StreamReader(data))
+                    {
+                        string text = reader.ReadToEnd();
+                        Console.WriteLine(text);
+                    }
+                }
             }
             return responseText;
+        }
+
+        #region Customer
+
+        protected void ddlCustomerOptions_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            lblMessage.Text = "";
+            divCreateCustomer.Visible = false;
+            divCustomerReadById.Visible = false;
+            divUpdateCustomer.Visible = false;
+            divCustomerDelete.Visible = false;
+            divCustomers.Visible = false;
+
+            if (ddlCustomerOptions.SelectedValue == "CreateCustomer")
+            {
+                divCreateCustomer.Visible = true;
+            }
+            if (ddlCustomerOptions.SelectedValue == "GetCustomerById")
+            {
+                divCustomerReadById.Visible = true;
+            }
+            if (ddlCustomerOptions.SelectedValue == "CustomerUpdate")
+            {
+                divUpdateCustomer.Visible = true;
+            }
+            if (ddlCustomerOptions.SelectedValue == "CustomerDelete")
+            {
+                divCustomerDelete.Visible = true;
+            }
+            if (ddlCustomerOptions.SelectedValue == "ReadAllCustomers")
+            {
+                divCustomers.Visible = true;
+            }
         }
 
         protected void btnCreateCustomer_Click(object sender, EventArgs e)
@@ -1008,6 +974,7 @@ namespace QuickBooksIntegration
                             txtCCBillingAddressCountry.Text = "";
                             txtCCName.Text = "";
                             txtCCNotes.Text = "";
+                            lblMessage.Text = "Customer Created Successfully";
                         }
                     }
                     else
@@ -1227,6 +1194,2038 @@ namespace QuickBooksIntegration
             }
             return customerList;
         }
+
+        #endregion Customer
+
+        #region CustomerPayments
+
+        protected void ddlPaymentOptions_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            lblMessage.Text = "";
+            divCreatePayment.Visible = false;
+            divPaymentReadById.Visible = false;
+            divUpdatePayment.Visible = false;
+            divPaymentDelete.Visible = false;
+            divPayments.Visible = false;
+
+            if (ddlPaymentOptions.SelectedValue == "CreatePayment")
+            {
+                divCreatePayment.Visible = true;
+            }
+            if (ddlPaymentOptions.SelectedValue == "GetPaymentById")
+            {
+                divPaymentReadById.Visible = true;
+            }
+            if (ddlPaymentOptions.SelectedValue == "PaymentUpdate")
+            {
+                divUpdatePayment.Visible = true;
+            }
+            if (ddlPaymentOptions.SelectedValue == "PaymentDelete")
+            {
+                divPaymentDelete.Visible = true;
+            }
+            if (ddlPaymentOptions.SelectedValue == "ReadAllPayments")
+            {
+                divPayments.Visible = true;
+            }
+        }
+
+        protected void btnCreatePayment_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string responseText = "";
+                string uri = string.Format("https://{0}/v3/company/{1}/payment", qboBaseUrl, Session["realmId"]);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/payments/1/bank-accounts/";
+                string body = "";
+                CreatePaymentReq ccObj = new CreatePaymentReq();
+                
+
+                body = JsonConvert.SerializeObject(ccObj);
+                // send the request
+                responseText = POSTQBAPICall(uri, body);
+                if (responseText != null && responseText != "")
+                {
+                    //CreatePaymentRes ccResObj = new CreatePaymentRes();
+                    //ccResObj = JsonConvert.DeserializeObject<CreatePaymentRes>(responseText);
+                    //if (ccResObj != null)
+                    //{
+                    //    if (ccResObj.Payment != null && ccResObj.Payment.Id != null && ccResObj.Payment.Id != "")
+                    //    {
+                    //        //Payment Created Successfully
+                    //        divCreatePayment.Visible = false;
+
+                    //        lblMessage.Text = "Payment Created Successfully";
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    lblMessage.Text = responseText;
+                    //}
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnGetPaymentById_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string PaymentId = txtPaymentId.Text;
+                string responseText = "";
+                string uri = string.Format("https://{0}/v3/company/{1}/payment/{2}", qboBaseUrl, Session["realmId"], PaymentId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/payments/1/bank-accounts/";
+
+                // send the request
+                responseText = GETQBAPICall(uri);
+                if (responseText != null && responseText != "")
+                {
+                    PaymentByIdRes ccResObj = new PaymentByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<PaymentByIdRes>(responseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Payment != null && ccResObj.Payment.Id != null && ccResObj.Payment.Id != "")
+                        {
+                            lblMessage.Text = "Payment  Date : " + ccResObj.Payment.TxnDate;
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = responseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnUpdatePayment_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string PaymentId = txtUCPaymentId.Text;
+                string firstresponseText = "";
+                string firsturi = string.Format("https://{0}/v3/company/{1}/payment/{2}", qboBaseUrl, Session["realmId"], PaymentId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/payments/1/bank-accounts/";
+
+                // send the request
+                firstresponseText = GETQBAPICall(firsturi);
+                if (firstresponseText != null && firstresponseText != "")
+                {
+                    PaymentByIdRes ccResObj = new PaymentByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<PaymentByIdRes>(firstresponseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Payment != null && ccResObj.Payment.Id != null && ccResObj.Payment.Id != "")
+                        {
+                            string responseText = "";
+                            string uri = string.Format("https://{0}/v3/company/{1}/payment", qboBaseUrl, Session["realmId"]);
+                            //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/payments/1/bank-accounts/";
+                            string body = "";
+                            UpdatePaymentReq ccObj = new UpdatePaymentReq();
+
+
+                            ccObj.domain = ccResObj.Payment.domain;
+                            ccObj.sparse = ccResObj.Payment.sparse;
+                            ccObj.Id = ccResObj.Payment.Id;
+                            ccObj.SyncToken = ccResObj.Payment.SyncToken;
+
+
+
+                            //Pass Other Parameters if needed.
+
+                            body = JsonConvert.SerializeObject(ccObj);
+                            // send the request
+                            responseText = POSTQBAPICall(uri, body);
+                            if (responseText != null && responseText != "")
+                            {
+                                lblMessage.Text = "Payment Updated Successfully.";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = firstresponseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnPaymentDelete_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string PaymentId = txtVDPaymentId.Text;
+                string firstresponseText = "";
+                string firsturi = string.Format("https://{0}/v3/company/{1}/payment/{2}", qboBaseUrl, Session["realmId"], PaymentId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/payments/1/bank-accounts/";
+
+                // send the request
+                firstresponseText = GETQBAPICall(firsturi);
+                if (firstresponseText != null && firstresponseText != "")
+                {
+                    PaymentByIdRes ccResObj = new PaymentByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<PaymentByIdRes>(firstresponseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Payment != null && ccResObj.Payment.Id != null && ccResObj.Payment.Id != "")
+                        {
+                            string responseText = "";
+                            string uri = string.Format("https://{0}/v3/company/{1}/payment?operation=delete", qboBaseUrl, Session["realmId"]);
+                            //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/payments/1/bank-accounts/";
+                            string body = "";
+
+                            PaymentDeleteReq ccObj = new PaymentDeleteReq();
+                            ccObj.Id = ccResObj.Payment.Id;
+                            ccObj.SyncToken = ccResObj.Payment.SyncToken;
+
+                            //Other Fields
+
+                            body = JsonConvert.SerializeObject(ccObj);
+                            // send the request
+                            responseText = POSTQBAPICall(uri, body);
+                            if (responseText != null && responseText != "")
+                            {
+                                lblMessage.Text = "Payment deleted successfully";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = firstresponseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnGetPayments_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<ReadAllPaymentSummary> paymentList = new List<ReadAllPaymentSummary>();
+                paymentList = GetPayments();
+                if (paymentList != null && paymentList.Count > 0)
+                {
+                    gvwPayments.DataSource = paymentList;
+                    gvwPayments.DataBind();
+                }
+                return;
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        public List<ReadAllPaymentSummary> GetPayments()
+        {
+            string responseText = "";
+            List<ReadAllPaymentSummary> paymentList = new List<ReadAllPaymentSummary>();
+            try
+            {
+                string query = "Select * from Payment startposition 1 maxresults 5";
+                // build the  request
+                string encodedQuery = WebUtility.UrlEncode(query);
+
+                //add qbobase url and query
+                string uri = string.Format("https://{0}/v3/company/{1}/query?query={2}", qboBaseUrl, Session["realmId"], encodedQuery);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/payments/1/bank-accounts/";
+                // send the request
+                responseText = GETQBAPICall(uri);
+                if (responseText != null && responseText != "")
+                {
+                    ReadAllPaymentRes custObj = JsonConvert.DeserializeObject<ReadAllPaymentRes>(responseText);
+                    foreach (var item in custObj.QueryResponse.Payment)
+                    {
+                        ReadAllPaymentSummary paymentObj = new ReadAllPaymentSummary();
+                        paymentObj.Id = item.Id;
+                        paymentObj.CustomerName = item.CustomerRef.name;
+                        paymentObj.Amount = item.TotalAmt.ToString();
+                        paymentObj.TransactionDate = item.TxnDate;
+                        paymentList.Add(paymentObj);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            return paymentList;
+        }
+
+        #endregion CustomerPayments
+
+        #region Account
+
+        protected void ddlAccountOptions_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            lblMessage.Text = "";
+            divCreateAccount.Visible = false;
+            divAccountReadById.Visible = false;
+            divUpdateAccount.Visible = false;
+            divAccounts.Visible = false;
+
+            if (ddlAccountOptions.SelectedValue == "CreateAccount")
+            {
+                divCreateAccount.Visible = true;
+            }
+            if (ddlAccountOptions.SelectedValue == "GetAccountById")
+            {
+                divAccountReadById.Visible = true;
+            }
+            if (ddlAccountOptions.SelectedValue == "AccountUpdate")
+            {
+                divUpdateAccount.Visible = true;
+            }
+            if (ddlAccountOptions.SelectedValue == "ReadAllAccounts")
+            {
+                divAccounts.Visible = true;
+            }
+        }
+
+        protected void btnCreateAccount_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string responseText = "";
+                string uri = string.Format("https://{0}/v3/company/{1}/account?minorversion=4", qboBaseUrl, Session["realmId"]);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/accounts/1/bank-accounts/";
+                string body = "";
+                CreateAccountReq ccObj = new CreateAccountReq();
+                ccObj.AccountType = ddlAccountType.SelectedValue;
+                ccObj.Name = txtAccountName.Text;
+                body = JsonConvert.SerializeObject(ccObj);
+                // send the request
+                responseText = POSTQBAPICall(uri, body);
+                if (responseText != null && responseText != "")
+                {
+                    CreateAccountRes ccResObj = new CreateAccountRes();
+                    ccResObj = JsonConvert.DeserializeObject<CreateAccountRes>(responseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Account != null && ccResObj.Account.Id != null && ccResObj.Account.Id != "")
+                        {
+                            //Account Created Successfully
+                            divCreateAccount.Visible = false;
+                            txtAccountName.Text = "";
+                            lblMessage.Text = "Account Created Successfully";
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = responseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnGetAccountById_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string AccountId = txtAccountId.Text;
+                string responseText = "";
+                string uri = string.Format("https://{0}/v3/company/{1}/account/{2}", qboBaseUrl, Session["realmId"], AccountId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/accounts/1/bank-accounts/";
+
+                // send the request
+                responseText = GETQBAPICall(uri);
+                if (responseText != null && responseText != "")
+                {
+                    AccountByIdRes ccResObj = new AccountByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<AccountByIdRes>(responseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Account != null && ccResObj.Account.Id != null && ccResObj.Account.Id != "")
+                        {
+                            lblMessage.Text = "Account  Name : " + ccResObj.Account.Name;
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = responseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnUpdateAccount_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string AccountId = txtUCAccountId.Text;
+                string firstresponseText = "";
+                string firsturi = string.Format("https://{0}/v3/company/{1}/account/{2}", qboBaseUrl, Session["realmId"], AccountId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/accounts/1/bank-accounts/";
+
+                // send the request
+                firstresponseText = GETQBAPICall(firsturi);
+                if (firstresponseText != null && firstresponseText != "")
+                {
+                    AccountByIdRes ccResObj = new AccountByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<AccountByIdRes>(firstresponseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Account != null && ccResObj.Account.Id != null && ccResObj.Account.Id != "")
+                        {
+                            string responseText = "";
+                            string uri = string.Format("https://{0}/v3/company/{1}/account", qboBaseUrl, Session["realmId"]);
+                            //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/accounts/1/bank-accounts/";
+                            string body = "";
+
+                            UpdateAccountReq ccObj = new UpdateAccountReq();
+                            ccObj.AccountSubType = ccResObj.Account.AccountSubType;
+                            ccObj.AccountType = ccResObj.Account.AccountType;
+                            ccObj.Active = ccResObj.Account.Active;
+                            ccObj.Classification = ccResObj.Account.Classification;
+                            ccObj.CurrentBalance = ccResObj.Account.CurrentBalance;
+                            ccObj.CurrentBalanceWithSubAccounts = ccResObj.Account.CurrentBalanceWithSubAccounts;
+                            ccObj.Name = txtUCAccountName.Text;
+                            ccObj.SubAccount = ccResObj.Account.SubAccount;
+                            ccObj.CurrencyRef = new UpdateAccountReqCurrencyRef();
+                            ccObj.CurrencyRef.name = ccResObj.Account.CurrencyRef.name;
+                            ccObj.CurrencyRef.value = ccResObj.Account.CurrencyRef.value;
+                            ccObj.domain = ccResObj.Account.domain;
+                            ccObj.sparse = ccResObj.Account.sparse;
+                            ccObj.Id = ccResObj.Account.Id;
+                            ccObj.SyncToken = ccResObj.Account.SyncToken;
+                            ccObj.FullyQualifiedName = ccResObj.Account.FullyQualifiedName;
+                            body = JsonConvert.SerializeObject(ccObj);
+                            // send the request
+                            responseText = POSTQBAPICall(uri, body);
+                            if (responseText != null && responseText != "")
+                            {
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = firstresponseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnGetAccounts_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<AccountsSummary> accountList = new List<AccountsSummary>();
+                accountList = GetAccounts();
+                if (accountList != null && accountList.Count > 0)
+                {
+                    gvwAccounts.DataSource = accountList;
+                    gvwAccounts.DataBind();
+                }
+                return;
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        public List<AccountsSummary> GetAccounts()
+        {
+            string responseText = "";
+            List<AccountsSummary> accountList = new List<AccountsSummary>();
+            try
+            {
+                string query = "Select * from Account startposition 1 maxresults 5";
+                // build the  request
+                string encodedQuery = WebUtility.UrlEncode(query);
+
+                //add qbobase url and query
+                string uri = string.Format("https://{0}/v3/company/{1}/query?query={2}", qboBaseUrl, Session["realmId"], encodedQuery);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/accounts/1/bank-accounts/";
+                // send the request
+                responseText = GETQBAPICall(uri);
+                if (responseText != null && responseText != "")
+                {
+                    ReadAllAccountRes custObj = JsonConvert.DeserializeObject<ReadAllAccountRes>(responseText);
+
+                    foreach (var item in custObj.QueryResponse.Account)
+                    {
+                        AccountsSummary accountObj = new AccountsSummary();
+                        accountObj.id = item.Id;
+                        accountObj.name = item.Name;
+                        accountList.Add(accountObj);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            return accountList;
+        }
+
+        #endregion Account
+
+        #region Vendor
+
+        protected void ddlVendorOptions_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            lblMessage.Text = "";
+            divCreateVendor.Visible = false;
+            divVendorReadById.Visible = false;
+            divUpdateVendor.Visible = false;
+            divVendorDelete.Visible = false;
+            divVendors.Visible = false;
+
+            if (ddlVendorOptions.SelectedValue == "CreateVendor")
+            {
+                divCreateVendor.Visible = true;
+            }
+            if (ddlVendorOptions.SelectedValue == "GetVendorById")
+            {
+                divVendorReadById.Visible = true;
+            }
+            if (ddlVendorOptions.SelectedValue == "VendorUpdate")
+            {
+                divUpdateVendor.Visible = true;
+            }
+            if (ddlVendorOptions.SelectedValue == "VendorDelete")
+            {
+                divVendorDelete.Visible = true;
+            }
+            if (ddlVendorOptions.SelectedValue == "ReadAllVendors")
+            {
+                divVendors.Visible = true;
+            }
+        }
+
+        protected void btnCreateVendor_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string responseText = "";
+                string uri = string.Format("https://{0}/v3/company/{1}/vendor", qboBaseUrl, Session["realmId"]);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/vendors/1/bank-accounts/";
+                string body = "";
+                CreateVendorReq ccObj = new CreateVendorReq();
+                ccObj.BillAddr = new CreateVendorReqBillAddr();
+                ccObj.BillAddr.Line1 = txtVendorBillingAddressLine1.Text;
+                ccObj.BillAddr.City = txtVendorBillingAddressCity.Text;
+                ccObj.BillAddr.Country = txtVendorBillingAddressCountry.Text;
+                ccObj.DisplayName = txtVendorName.Text;
+                body = JsonConvert.SerializeObject(ccObj);
+                // send the request
+                responseText = POSTQBAPICall(uri, body);
+                if (responseText != null && responseText != "")
+                {
+                    CreateVendorRes ccResObj = new CreateVendorRes();
+                    ccResObj = JsonConvert.DeserializeObject<CreateVendorRes>(responseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Vendor != null && ccResObj.Vendor.Id != null && ccResObj.Vendor.Id != "")
+                        {
+                            //Vendor Created Successfully
+                            divCreateVendor.Visible = false;
+                            txtVendorBillingAddressCity.Text = "";
+                            txtVendorBillingAddressCountry.Text = "";
+                            txtVendorBillingAddressLine1.Text = "";
+                            txtVendorName.Text = "";
+                            lblMessage.Text = "Vendor Created Successfully";
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = responseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnGetVendorById_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string VendorId = txtVendorId.Text;
+                string responseText = "";
+                string uri = string.Format("https://{0}/v3/company/{1}/vendor/{2}", qboBaseUrl, Session["realmId"], VendorId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/vendors/1/bank-accounts/";
+
+                // send the request
+                responseText = GETQBAPICall(uri);
+                if (responseText != null && responseText != "")
+                {
+                    VendorByIdRes ccResObj = new VendorByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<VendorByIdRes>(responseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Vendor != null && ccResObj.Vendor.Id != null && ccResObj.Vendor.Id != "")
+                        {
+                            lblMessage.Text = "Vendor  Name : " + ccResObj.Vendor.DisplayName;
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = responseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnUpdateVendor_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string VendorId = txtUCVendorId.Text;
+                string firstresponseText = "";
+                string firsturi = string.Format("https://{0}/v3/company/{1}/vendor/{2}", qboBaseUrl, Session["realmId"], VendorId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/vendors/1/bank-accounts/";
+
+                // send the request
+                firstresponseText = GETQBAPICall(firsturi);
+                if (firstresponseText != null && firstresponseText != "")
+                {
+                    VendorByIdRes ccResObj = new VendorByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<VendorByIdRes>(firstresponseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Vendor != null && ccResObj.Vendor.Id != null && ccResObj.Vendor.Id != "")
+                        {
+                            string responseText = "";
+                            string uri = string.Format("https://{0}/v3/company/{1}/vendor", qboBaseUrl, Session["realmId"]);
+                            //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/vendors/1/bank-accounts/";
+                            string body = "";
+                            UpdateVendorReq ccObj = new UpdateVendorReq();
+                            ccObj.GivenName = txtUCVendorName.Text;
+                            ccObj.domain = ccResObj.Vendor.domain;
+                            ccObj.sparse = ccResObj.Vendor.sparse;
+                            ccObj.Id = ccResObj.Vendor.Id;
+                            ccObj.SyncToken = ccResObj.Vendor.SyncToken;
+                            ccObj.Active = ccResObj.Vendor.Active;
+
+                            //Pass Other Parameters if needed.
+
+                            body = JsonConvert.SerializeObject(ccObj);
+                            // send the request
+                            responseText = POSTQBAPICall(uri, body);
+                            if (responseText != null && responseText != "")
+                            {
+                                lblMessage.Text = "Vendor Updated Successfully.";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = firstresponseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnVendorDelete_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string VendorId = txtVDVendorId.Text;
+                string firstresponseText = "";
+                string firsturi = string.Format("https://{0}/v3/company/{1}/vendor/{2}", qboBaseUrl, Session["realmId"], VendorId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/vendors/1/bank-accounts/";
+
+                // send the request
+                firstresponseText = GETQBAPICall(firsturi);
+                if (firstresponseText != null && firstresponseText != "")
+                {
+                    VendorByIdRes ccResObj = new VendorByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<VendorByIdRes>(firstresponseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Vendor != null && ccResObj.Vendor.Id != null && ccResObj.Vendor.Id != "")
+                        {
+                            string responseText = "";
+                            string uri = string.Format("https://{0}/v3/company/{1}/vendor", qboBaseUrl, Session["realmId"]);
+                            //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/vendors/1/bank-accounts/";
+                            string body = "";
+
+                            VendorDeleteReq ccObj = new VendorDeleteReq();
+                            ccObj.domain = ccResObj.Vendor.domain;
+                            ccObj.sparse = true;
+                            ccObj.Id = ccResObj.Vendor.Id;
+                            ccObj.SyncToken = ccResObj.Vendor.SyncToken;
+                            ccObj.Active = false;
+
+                            //Other Fields
+
+                            body = JsonConvert.SerializeObject(ccObj);
+                            // send the request
+                            responseText = POSTQBAPICall(uri, body);
+                            if (responseText != null && responseText != "")
+                            {
+                                lblMessage.Text = "Vendor made inactive successfully";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = firstresponseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnGetVendors_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<VendorsSummary> vendorList = new List<VendorsSummary>();
+                vendorList = GetVendors();
+                if (vendorList != null && vendorList.Count > 0)
+                {
+                    gvwVendors.DataSource = vendorList;
+                    gvwVendors.DataBind();
+                }
+                return;
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        public List<VendorsSummary> GetVendors()
+        {
+            string responseText = "";
+            List<VendorsSummary> vendorList = new List<VendorsSummary>();
+            try
+            {
+                string query = "Select * from Vendor startposition 1 maxresults 5";
+                // build the  request
+                string encodedQuery = WebUtility.UrlEncode(query);
+
+                //add qbobase url and query
+                string uri = string.Format("https://{0}/v3/company/{1}/query?query={2}", qboBaseUrl, Session["realmId"], encodedQuery);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/vendors/1/bank-accounts/";
+                // send the request
+                responseText = GETQBAPICall(uri);
+                if (responseText != null && responseText != "")
+                {
+                    ReadAllVendorRes custObj = JsonConvert.DeserializeObject<ReadAllVendorRes>(responseText);
+
+                    foreach (var item in custObj.QueryResponse.Vendor)
+                    {
+                        VendorsSummary vendorObj = new VendorsSummary();
+                        vendorObj.id = item.Id;
+                        vendorObj.name = item.DisplayName;
+                        vendorList.Add(vendorObj);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            return vendorList;
+        }
+
+        #endregion
+        #region Bill
+
+        protected void ddlBillOptions_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            lblMessage.Text = "";
+            divCreateBill.Visible = false;
+            divBillReadById.Visible = false;
+            divUpdateBill.Visible = false;
+            divBillDelete.Visible = false;
+            divBills.Visible = false;
+
+            if (ddlBillOptions.SelectedValue == "CreateBill")
+            {
+                divCreateBill.Visible = true;
+            }
+            if (ddlBillOptions.SelectedValue == "GetBillById")
+            {
+                divBillReadById.Visible = true;
+            }
+            if (ddlBillOptions.SelectedValue == "BillUpdate")
+            {
+                divUpdateBill.Visible = true;
+            }
+            if (ddlBillOptions.SelectedValue == "BillDelete")
+            {
+                divBillDelete.Visible = true;
+            }
+            if (ddlBillOptions.SelectedValue == "ReadAllBills")
+            {
+                divBills.Visible = true;
+            }
+        }
+
+        protected void btnCreateBill_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string responseText = "";
+                string uri = string.Format("https://{0}/v3/company/{1}/bill", qboBaseUrl, Session["realmId"]);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/bills/1/bank-accounts/";
+                string body = "";
+                CreateBillReq ccObj = new CreateBillReq();
+                ccObj.Line = new List<CreateBillReqLine>();
+                CreateBillReqLine lineObj = new CreateBillReqLine();
+
+                  body = JsonConvert.SerializeObject(ccObj);
+                // send the request
+                responseText = POSTQBAPICall(uri, body);
+                if (responseText != null && responseText != "")
+                {
+                    CreateBillRes ccResObj = new CreateBillRes();
+                    ccResObj = JsonConvert.DeserializeObject<CreateBillRes>(responseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Bill != null && ccResObj.Bill.Id != null && ccResObj.Bill.Id != "")
+                        {
+                            //Bill Created Successfully
+                            divCreateBill.Visible = false;
+                         
+                            lblMessage.Text = "Bill Created Successfully";
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = responseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnGetBillById_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string BillId = txtBillId.Text;
+                string responseText = "";
+                string uri = string.Format("https://{0}/v3/company/{1}/bill/{2}", qboBaseUrl, Session["realmId"], BillId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/bills/1/bank-accounts/";
+
+                // send the request
+                responseText = GETQBAPICall(uri);
+                if (responseText != null && responseText != "")
+                {
+                    BillByIdRes ccResObj = new BillByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<BillByIdRes>(responseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Bill != null && ccResObj.Bill.Id != null && ccResObj.Bill.Id != "")
+                        {
+                            lblMessage.Text = "Customer  Name For Bill: " + ccResObj.Bill.VendorRef.name;
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = responseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnUpdateBill_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string BillId = txtUCBillId.Text;
+                string firstresponseText = "";
+                string firsturi = string.Format("https://{0}/v3/company/{1}/bill/{2}", qboBaseUrl, Session["realmId"], BillId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/bills/1/bank-accounts/";
+
+                // send the request
+                firstresponseText = GETQBAPICall(firsturi);
+                if (firstresponseText != null && firstresponseText != "")
+                {
+                    BillByIdRes ccResObj = new BillByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<BillByIdRes>(firstresponseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Bill != null && ccResObj.Bill.Id != null && ccResObj.Bill.Id != "")
+                        {
+                            string responseText = "";
+                            string uri = string.Format("https://{0}/v3/company/{1}/bill", qboBaseUrl, Session["realmId"]);
+                            //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/bills/1/bank-accounts/";
+                            string body = "";
+                            UpdateBillReq ccObj = new UpdateBillReq();
+
+                            //Pass Other Parameters if needed.
+
+                            body = JsonConvert.SerializeObject(ccObj);
+                            // send the request
+                            responseText = POSTQBAPICall(uri, body);
+                            if (responseText != null && responseText != "")
+                            {
+                                lblMessage.Text = "Bill Updated Successfully.";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = firstresponseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnBillDelete_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string BillId = txtVDBillId.Text;
+                string firstresponseText = "";
+                string firsturi = string.Format("https://{0}/v3/company/{1}/bill/{2}", qboBaseUrl, Session["realmId"], BillId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/bills/1/bank-accounts/";
+
+                // send the request
+                firstresponseText = GETQBAPICall(firsturi);
+                if (firstresponseText != null && firstresponseText != "")
+                {
+                    BillByIdRes ccResObj = new BillByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<BillByIdRes>(firstresponseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Bill != null && ccResObj.Bill.Id != null && ccResObj.Bill.Id != "")
+                        {
+                            string responseText = "";
+                            string uri = string.Format("https://{0}/v3/company/{1}/bill?operation=delete", qboBaseUrl, Session["realmId"]);
+                            //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/bills/1/bank-accounts/";
+                            string body = "";
+
+                            BillDeleteReq ccObj = new BillDeleteReq();
+                            ccObj.Id = ccResObj.Bill.Id;
+                            ccObj.SyncToken = ccResObj.Bill.SyncToken;
+
+                            //Other Fields
+
+                            body = JsonConvert.SerializeObject(ccObj);
+                            // send the request
+                            responseText = POSTQBAPICall(uri, body);
+                            if (responseText != null && responseText != "")
+                            {
+                                lblMessage.Text = "Bill made inactive successfully";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = firstresponseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnGetBills_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<BillsSummary> billList = new List<BillsSummary>();
+                billList = GetBills();
+                if (billList != null && billList.Count > 0)
+                {
+                    gvwBills.DataSource = billList;
+                    gvwBills.DataBind();
+                }
+                return;
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        public List<BillsSummary> GetBills()
+        {
+            string responseText = "";
+            List<BillsSummary> billList = new List<BillsSummary>();
+            try
+            {
+                string query = "Select * from Bill startposition 1 maxresults 5";
+                // build the  request
+                string encodedQuery = WebUtility.UrlEncode(query);
+
+                //add qbobase url and query
+                string uri = string.Format("https://{0}/v3/company/{1}/query?query={2}", qboBaseUrl, Session["realmId"], encodedQuery);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/bills/1/bank-accounts/";
+                // send the request
+                responseText = GETQBAPICall(uri);
+                if (responseText != null && responseText != "")
+                {
+                    ReadAllBillRes custObj = JsonConvert.DeserializeObject<ReadAllBillRes>(responseText);
+
+                    foreach (var item in custObj.QueryResponse.Bill)
+                    {
+                        BillsSummary billObj = new BillsSummary();
+                        billObj.id = item.Id;
+                        billObj.txndate = item.TxnDate;
+                        billList.Add(billObj);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            return billList;
+        }
+
+        #endregion
+        #region BillPayment
+
+        protected void ddlBillPaymentOptions_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            lblMessage.Text = "";
+            divCreateBillPayment.Visible = false;
+            divBillPaymentReadById.Visible = false;
+            divUpdateBillPayment.Visible = false;
+            divBillPaymentDelete.Visible = false;
+            divBillPayments.Visible = false;
+
+            if (ddlBillPaymentOptions.SelectedValue == "CreateBillPayment")
+            {
+                divCreateBillPayment.Visible = true;
+            }
+            if (ddlBillPaymentOptions.SelectedValue == "GetBillPaymentById")
+            {
+                divBillPaymentReadById.Visible = true;
+            }
+            if (ddlBillPaymentOptions.SelectedValue == "BillPaymentUpdate")
+            {
+                divUpdateBillPayment.Visible = true;
+            }
+            if (ddlBillPaymentOptions.SelectedValue == "BillPaymentDelete")
+            {
+                divBillPaymentDelete.Visible = true;
+            }
+            if (ddlBillPaymentOptions.SelectedValue == "ReadAllBillPayments")
+            {
+                divBillPayments.Visible = true;
+            }
+        }
+
+        protected void btnCreateBillPayment_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string responseText = "";
+                string uri = string.Format("https://{0}/v3/company/{1}/billPayment", qboBaseUrl, Session["realmId"]);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/billPayments/1/bank-accounts/";
+                string body = "";
+                CreateBillPaymentReq ccObj = new CreateBillPaymentReq();
+                ccObj.Line = new List<CreateBillPaymentReqLine>();
+                CreateBillPaymentReqLine lineObj = new CreateBillPaymentReqLine();
+
+                body = JsonConvert.SerializeObject(ccObj);
+                // send the request
+                responseText = POSTQBAPICall(uri, body);
+                if (responseText != null && responseText != "")
+                {
+                    //CreateBillPaymentRes ccResObj = new CreateBillPaymentRes();
+                    //ccResObj = JsonConvert.DeserializeObject<CreateBillPaymentRes>(responseText);
+                    //if (ccResObj != null)
+                    //{
+                    //    if (ccResObj.BillPayment != null && ccResObj.BillPayment.Id != null && ccResObj.BillPayment.Id != "")
+                    //    {
+                    //        //BillPayment Created Successfully
+                    //        divCreateBillPayment.Visible = false;
+
+                    //        lblMessage.Text = "BillPayment Created Successfully";
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    lblMessage.Text = responseText;
+                    //}
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnGetBillPaymentById_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string BillPaymentId = txtBillPaymentId.Text;
+                string responseText = "";
+                string uri = string.Format("https://{0}/v3/company/{1}/billPayment/{2}", qboBaseUrl, Session["realmId"], BillPaymentId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/billPayments/1/bank-accounts/";
+
+                // send the request
+                responseText = GETQBAPICall(uri);
+                if (responseText != null && responseText != "")
+                {
+                    BillPaymentByIdRes ccResObj = new BillPaymentByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<BillPaymentByIdRes>(responseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.BillPayment != null && ccResObj.BillPayment.Id != null && ccResObj.BillPayment.Id != "")
+                        {
+                            lblMessage.Text = "Customer  Name For BillPayment: " + ccResObj.BillPayment.VendorRef.name;
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = responseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnUpdateBillPayment_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string BillPaymentId = txtUCBillPaymentId.Text;
+                string firstresponseText = "";
+                string firsturi = string.Format("https://{0}/v3/company/{1}/billPayment/{2}", qboBaseUrl, Session["realmId"], BillPaymentId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/billPayments/1/bank-accounts/";
+
+                // send the request
+                firstresponseText = GETQBAPICall(firsturi);
+                if (firstresponseText != null && firstresponseText != "")
+                {
+                    BillPaymentByIdRes ccResObj = new BillPaymentByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<BillPaymentByIdRes>(firstresponseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.BillPayment != null && ccResObj.BillPayment.Id != null && ccResObj.BillPayment.Id != "")
+                        {
+                            string responseText = "";
+                            string uri = string.Format("https://{0}/v3/company/{1}/billPayment", qboBaseUrl, Session["realmId"]);
+                            //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/billPayments/1/bank-accounts/";
+                            string body = "";
+                            UpdateBillPaymentReq ccObj = new UpdateBillPaymentReq();
+
+                            //Pass Other Parameters if needed.
+
+                            body = JsonConvert.SerializeObject(ccObj);
+                            // send the request
+                            responseText = POSTQBAPICall(uri, body);
+                            if (responseText != null && responseText != "")
+                            {
+                                lblMessage.Text = "BillPayment Updated Successfully.";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = firstresponseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnBillPaymentDelete_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string BillPaymentId = txtVDBillPaymentId.Text;
+                string firstresponseText = "";
+                string firsturi = string.Format("https://{0}/v3/company/{1}/billPayment/{2}", qboBaseUrl, Session["realmId"], BillPaymentId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/billPayments/1/bank-accounts/";
+
+                // send the request
+                firstresponseText = GETQBAPICall(firsturi);
+                if (firstresponseText != null && firstresponseText != "")
+                {
+                    BillPaymentByIdRes ccResObj = new BillPaymentByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<BillPaymentByIdRes>(firstresponseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.BillPayment != null && ccResObj.BillPayment.Id != null && ccResObj.BillPayment.Id != "")
+                        {
+                            string responseText = "";
+                            string uri = string.Format("https://{0}/v3/company/{1}/billPayment?operation=delete", qboBaseUrl, Session["realmId"]);
+                            //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/billPayments/1/bank-accounts/";
+                            string body = "";
+
+                            BillPaymentDeleteReq ccObj = new BillPaymentDeleteReq();
+                            ccObj.Id = ccResObj.BillPayment.Id;
+                            ccObj.SyncToken = ccResObj.BillPayment.SyncToken;
+
+                            //Other Fields
+
+                            body = JsonConvert.SerializeObject(ccObj);
+                            // send the request
+                            responseText = POSTQBAPICall(uri, body);
+                            if (responseText != null && responseText != "")
+                            {
+                                lblMessage.Text = "BillPayment made inactive successfully";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = firstresponseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnGetBillPayments_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<BillPaymentsSummary> billPaymentList = new List<BillPaymentsSummary>();
+                billPaymentList = GetBillPayments();
+                if (billPaymentList != null && billPaymentList.Count > 0)
+                {
+                    gvwBillPayments.DataSource = billPaymentList;
+                    gvwBillPayments.DataBind();
+                }
+                return;
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        public List<BillPaymentsSummary> GetBillPayments()
+        {
+            string responseText = "";
+            List<BillPaymentsSummary> billPaymentList = new List<BillPaymentsSummary>();
+            try
+            {
+                string query = "Select * from BillPayment startposition 1 maxresults 5";
+                // build the  request
+                string encodedQuery = WebUtility.UrlEncode(query);
+
+                //add qbobase url and query
+                string uri = string.Format("https://{0}/v3/company/{1}/query?query={2}", qboBaseUrl, Session["realmId"], encodedQuery);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/billPayments/1/bank-accounts/";
+                // send the request
+                responseText = GETQBAPICall(uri);
+                if (responseText != null && responseText != "")
+                {
+                    ReadAllBillPaymentRes custObj = JsonConvert.DeserializeObject<ReadAllBillPaymentRes>(responseText);
+
+                    foreach (var item in custObj.QueryResponse.BillPayment)
+                    {
+                        BillPaymentsSummary billPaymentObj = new BillPaymentsSummary();
+                        billPaymentObj.id = item.Id;
+                        billPaymentObj.txndate = item.TxnDate;
+                        billPaymentList.Add(billPaymentObj);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            return billPaymentList;
+        }
+
+        #endregion
+        #region Invoice
+
+        protected void ddlInvoiceOptions_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            lblMessage.Text = "";
+            divCreateInvoice.Visible = false;
+            divInvoiceReadById.Visible = false;
+            divUpdateInvoice.Visible = false;
+            divInvoiceDelete.Visible = false;
+            divInvoices.Visible = false;
+
+            if (ddlInvoiceOptions.SelectedValue == "CreateInvoice")
+            {
+                divCreateInvoice.Visible = true;
+            }
+            if (ddlInvoiceOptions.SelectedValue == "GetInvoiceById")
+            {
+                divInvoiceReadById.Visible = true;
+            }
+            if (ddlInvoiceOptions.SelectedValue == "InvoiceUpdate")
+            {
+                divUpdateInvoice.Visible = true;
+            }
+            if (ddlInvoiceOptions.SelectedValue == "InvoiceDelete")
+            {
+                divInvoiceDelete.Visible = true;
+            }
+            if (ddlInvoiceOptions.SelectedValue == "ReadAllInvoices")
+            {
+                divInvoices.Visible = true;
+            }
+        }
+
+        protected void btnCreateInvoice_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string responseText = "";
+                string uri = string.Format("https://{0}/v3/company/{1}/invoice", qboBaseUrl, Session["realmId"]);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/invoices/1/bank-accounts/";
+                string body = "";
+                CreateInvoiceReq ccObj = new CreateInvoiceReq();
+                ccObj.Line = new List<CreateInvoiceReqLine>();
+                CreateInvoiceReqLine lineObj = new CreateInvoiceReqLine();
+
+                body = JsonConvert.SerializeObject(ccObj);
+                // send the request
+                responseText = POSTQBAPICall(uri, body);
+                if (responseText != null && responseText != "")
+                {
+                    //CreateInvoiceRes ccResObj = new CreateInvoiceRes();
+                    //ccResObj = JsonConvert.DeserializeObject<CreateInvoiceRes>(responseText);
+                    //if (ccResObj != null)
+                    //{
+                    //    if (ccResObj.Invoice != null && ccResObj.Invoice.Id != null && ccResObj.Invoice.Id != "")
+                    //    {
+                    //        //Invoice Created Successfully
+                    //        divCreateInvoice.Visible = false;
+
+                    //        lblMessage.Text = "Invoice Created Successfully";
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    lblMessage.Text = responseText;
+                    //}
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnGetInvoiceById_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string InvoiceId = txtInvoiceId.Text;
+                string responseText = "";
+                string uri = string.Format("https://{0}/v3/company/{1}/invoice/{2}", qboBaseUrl, Session["realmId"], InvoiceId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/invoices/1/bank-accounts/";
+
+                // send the request
+                responseText = GETQBAPICall(uri);
+                if (responseText != null && responseText != "")
+                {
+                    InvoiceByIdRes ccResObj = new InvoiceByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<InvoiceByIdRes>(responseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Invoice != null && ccResObj.Invoice.Id != null && ccResObj.Invoice.Id != "")
+                        {
+                            lblMessage.Text = "Customer  Name For Invoice: " + ccResObj.Invoice.CustomerRef.name;
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = responseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnUpdateInvoice_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string InvoiceId = txtUCInvoiceId.Text;
+                string firstresponseText = "";
+                string firsturi = string.Format("https://{0}/v3/company/{1}/invoice/{2}", qboBaseUrl, Session["realmId"], InvoiceId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/invoices/1/bank-accounts/";
+
+                // send the request
+                firstresponseText = GETQBAPICall(firsturi);
+                if (firstresponseText != null && firstresponseText != "")
+                {
+                    InvoiceByIdRes ccResObj = new InvoiceByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<InvoiceByIdRes>(firstresponseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Invoice != null && ccResObj.Invoice.Id != null && ccResObj.Invoice.Id != "")
+                        {
+                            string responseText = "";
+                            string uri = string.Format("https://{0}/v3/company/{1}/invoice", qboBaseUrl, Session["realmId"]);
+                            //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/invoices/1/bank-accounts/";
+                            string body = "";
+                            UpdateInvoiceReq ccObj = new UpdateInvoiceReq();
+
+                            //Pass Other Parameters if needed.
+
+                            body = JsonConvert.SerializeObject(ccObj);
+                            // send the request
+                            responseText = POSTQBAPICall(uri, body);
+                            if (responseText != null && responseText != "")
+                            {
+                                lblMessage.Text = "Invoice Updated Successfully.";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = firstresponseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnInvoiceDelete_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string InvoiceId = txtVDInvoiceId.Text;
+                string firstresponseText = "";
+                string firsturi = string.Format("https://{0}/v3/company/{1}/invoice/{2}", qboBaseUrl, Session["realmId"], InvoiceId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/invoices/1/bank-accounts/";
+
+                // send the request
+                firstresponseText = GETQBAPICall(firsturi);
+                if (firstresponseText != null && firstresponseText != "")
+                {
+                    InvoiceByIdRes ccResObj = new InvoiceByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<InvoiceByIdRes>(firstresponseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Invoice != null && ccResObj.Invoice.Id != null && ccResObj.Invoice.Id != "")
+                        {
+                            string responseText = "";
+                            string uri = string.Format("https://{0}/v3/company/{1}/invoice?operation=delete", qboBaseUrl, Session["realmId"]);
+                            //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/invoices/1/bank-accounts/";
+                            string body = "";
+
+                            InvoiceDeleteReq ccObj = new InvoiceDeleteReq();
+                            ccObj.Id = ccResObj.Invoice.Id;
+                            ccObj.SyncToken = ccResObj.Invoice.SyncToken;
+
+                            //Other Fields
+
+                            body = JsonConvert.SerializeObject(ccObj);
+                            // send the request
+                            responseText = POSTQBAPICall(uri, body);
+                            if (responseText != null && responseText != "")
+                            {
+                                lblMessage.Text = "Invoice made inactive successfully";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = firstresponseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnGetInvoices_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<InvoicesSummary> invoiceList = new List<InvoicesSummary>();
+                invoiceList = GetInvoices();
+                if (invoiceList != null && invoiceList.Count > 0)
+                {
+                    gvwInvoices.DataSource = invoiceList;
+                    gvwInvoices.DataBind();
+                }
+                return;
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        public List<InvoicesSummary> GetInvoices()
+        {
+            string responseText = "";
+            List<InvoicesSummary> invoiceList = new List<InvoicesSummary>();
+            try
+            {
+                string query = "Select * from Invoice startposition 1 maxresults 5";
+                // build the  request
+                string encodedQuery = WebUtility.UrlEncode(query);
+
+                //add qbobase url and query
+                string uri = string.Format("https://{0}/v3/company/{1}/query?query={2}", qboBaseUrl, Session["realmId"], encodedQuery);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/invoices/1/bank-accounts/";
+                // send the request
+                responseText = GETQBAPICall(uri);
+                if (responseText != null && responseText != "")
+                {
+                    ReadAllInvoiceRes custObj = JsonConvert.DeserializeObject<ReadAllInvoiceRes>(responseText);
+
+                    foreach (var item in custObj.QueryResponse.Invoice)
+                    {
+                        InvoicesSummary invoiceObj = new InvoicesSummary();
+                        invoiceObj.id = item.Id;
+                        invoiceObj.txndate = item.TxnDate;
+                        invoiceList.Add(invoiceObj);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            return invoiceList;
+        }
+
+        #endregion
+        #region Purchase
+
+        protected void ddlPurchaseOptions_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            lblMessage.Text = "";
+            divCreatePurchase.Visible = false;
+            divPurchaseReadById.Visible = false;
+            divUpdatePurchase.Visible = false;
+            divPurchaseDelete.Visible = false;
+            divPurchases.Visible = false;
+
+            if (ddlPurchaseOptions.SelectedValue == "CreatePurchase")
+            {
+                divCreatePurchase.Visible = true;
+            }
+            if (ddlPurchaseOptions.SelectedValue == "GetPurchaseById")
+            {
+                divPurchaseReadById.Visible = true;
+            }
+            if (ddlPurchaseOptions.SelectedValue == "PurchaseUpdate")
+            {
+                divUpdatePurchase.Visible = true;
+            }
+            if (ddlPurchaseOptions.SelectedValue == "PurchaseDelete")
+            {
+                divPurchaseDelete.Visible = true;
+            }
+            if (ddlPurchaseOptions.SelectedValue == "ReadAllPurchases")
+            {
+                divPurchases.Visible = true;
+            }
+        }
+
+        protected void btnCreatePurchase_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string responseText = "";
+                string uri = string.Format("https://{0}/v3/company/{1}/purchase", qboBaseUrl, Session["realmId"]);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/purchases/1/bank-accounts/";
+                string body = "";
+                CreatePurchaseReq ccObj = new CreatePurchaseReq();
+                ccObj.Line = new List<CreatePurchaseReqLine>();
+                CreatePurchaseReqLine lineObj = new CreatePurchaseReqLine();
+
+                body = JsonConvert.SerializeObject(ccObj);
+                // send the request
+                responseText = POSTQBAPICall(uri, body);
+                if (responseText != null && responseText != "")
+                {
+                    //CreatePurchaseRes ccResObj = new CreatePurchaseRes();
+                    //ccResObj = JsonConvert.DeserializeObject<CreatePurchaseRes>(responseText);
+                    //if (ccResObj != null)
+                    //{
+                    //    if (ccResObj.Purchase != null && ccResObj.Purchase.Id != null && ccResObj.Purchase.Id != "")
+                    //    {
+                    //        //Purchase Created Successfully
+                    //        divCreatePurchase.Visible = false;
+
+                    //        lblMessage.Text = "Purchase Created Successfully";
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    lblMessage.Text = responseText;
+                    //}
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnGetPurchaseById_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string PurchaseId = txtPurchaseId.Text;
+                string responseText = "";
+                string uri = string.Format("https://{0}/v3/company/{1}/purchase/{2}", qboBaseUrl, Session["realmId"], PurchaseId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/purchases/1/bank-accounts/";
+
+                // send the request
+                responseText = GETQBAPICall(uri);
+                if (responseText != null && responseText != "")
+                {
+                    PurchaseByIdRes ccResObj = new PurchaseByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<PurchaseByIdRes>(responseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Purchase != null && ccResObj.Purchase.Id != null && ccResObj.Purchase.Id != "")
+                        {
+                            lblMessage.Text = "Customer  Name For Purchase: " + ccResObj.Purchase.CurrencyRef.name;
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = responseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnUpdatePurchase_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string PurchaseId = txtUCPurchaseId.Text;
+                string firstresponseText = "";
+                string firsturi = string.Format("https://{0}/v3/company/{1}/purchase/{2}", qboBaseUrl, Session["realmId"], PurchaseId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/purchases/1/bank-accounts/";
+
+                // send the request
+                firstresponseText = GETQBAPICall(firsturi);
+                if (firstresponseText != null && firstresponseText != "")
+                {
+                    PurchaseByIdRes ccResObj = new PurchaseByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<PurchaseByIdRes>(firstresponseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Purchase != null && ccResObj.Purchase.Id != null && ccResObj.Purchase.Id != "")
+                        {
+                            string responseText = "";
+                            string uri = string.Format("https://{0}/v3/company/{1}/purchase", qboBaseUrl, Session["realmId"]);
+                            //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/purchases/1/bank-accounts/";
+                            string body = "";
+                            UpdatePurchaseReq ccObj = new UpdatePurchaseReq();
+
+                            //Pass Other Parameters if needed.
+
+                            body = JsonConvert.SerializeObject(ccObj);
+                            // send the request
+                            responseText = POSTQBAPICall(uri, body);
+                            if (responseText != null && responseText != "")
+                            {
+                                lblMessage.Text = "Purchase Updated Successfully.";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = firstresponseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnPurchaseDelete_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string PurchaseId = txtVDPurchaseId.Text;
+                string firstresponseText = "";
+                string firsturi = string.Format("https://{0}/v3/company/{1}/purchase/{2}", qboBaseUrl, Session["realmId"], PurchaseId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/purchases/1/bank-accounts/";
+
+                // send the request
+                firstresponseText = GETQBAPICall(firsturi);
+                if (firstresponseText != null && firstresponseText != "")
+                {
+                    PurchaseByIdRes ccResObj = new PurchaseByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<PurchaseByIdRes>(firstresponseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.Purchase != null && ccResObj.Purchase.Id != null && ccResObj.Purchase.Id != "")
+                        {
+                            string responseText = "";
+                            string uri = string.Format("https://{0}/v3/company/{1}/purchase?operation=delete", qboBaseUrl, Session["realmId"]);
+                            //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/purchases/1/bank-accounts/";
+                            string body = "";
+
+                            PurchaseDeleteReq ccObj = new PurchaseDeleteReq();
+                            ccObj.Id = ccResObj.Purchase.Id;
+                            ccObj.SyncToken = ccResObj.Purchase.SyncToken;
+
+                            //Other Fields
+
+                            body = JsonConvert.SerializeObject(ccObj);
+                            // send the request
+                            responseText = POSTQBAPICall(uri, body);
+                            if (responseText != null && responseText != "")
+                            {
+                                lblMessage.Text = "Purchase made inactive successfully";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = firstresponseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnGetPurchases_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<PurchasesSummary> purchaseList = new List<PurchasesSummary>();
+                purchaseList = GetPurchases();
+                if (purchaseList != null && purchaseList.Count > 0)
+                {
+                    gvwPurchases.DataSource = purchaseList;
+                    gvwPurchases.DataBind();
+                }
+                return;
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        public List<PurchasesSummary> GetPurchases()
+        {
+            string responseText = "";
+            List<PurchasesSummary> purchaseList = new List<PurchasesSummary>();
+            try
+            {
+                string query = "Select * from Purchase startposition 1 maxresults 5";
+                // build the  request
+                string encodedQuery = WebUtility.UrlEncode(query);
+
+                //add qbobase url and query
+                string uri = string.Format("https://{0}/v3/company/{1}/query?query={2}", qboBaseUrl, Session["realmId"], encodedQuery);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/purchases/1/bank-accounts/";
+                // send the request
+                responseText = GETQBAPICall(uri);
+                if (responseText != null && responseText != "")
+                {
+                    ReadAllPurchaseRes custObj = JsonConvert.DeserializeObject<ReadAllPurchaseRes>(responseText);
+
+                    foreach (var item in custObj.QueryResponse.Purchase)
+                    {
+                        PurchasesSummary purchaseObj = new PurchasesSummary();
+                        purchaseObj.id = item.Id;
+                        purchaseObj.txndate = item.TxnDate;
+                        purchaseList.Add(purchaseObj);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            return purchaseList;
+        }
+
+        #endregion
+        #region SalesReceipt
+
+        protected void ddlSalesReceiptOptions_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            lblMessage.Text = "";
+            divCreateSalesReceipt.Visible = false;
+            divSalesReceiptReadById.Visible = false;
+            divUpdateSalesReceipt.Visible = false;
+            divSalesReceiptDelete.Visible = false;
+            divSalesReceipts.Visible = false;
+
+            if (ddlSalesReceiptOptions.SelectedValue == "CreateSalesReceipt")
+            {
+                divCreateSalesReceipt.Visible = true;
+            }
+            if (ddlSalesReceiptOptions.SelectedValue == "GetSalesReceiptById")
+            {
+                divSalesReceiptReadById.Visible = true;
+            }
+            if (ddlSalesReceiptOptions.SelectedValue == "SalesReceiptUpdate")
+            {
+                divUpdateSalesReceipt.Visible = true;
+            }
+            if (ddlSalesReceiptOptions.SelectedValue == "SalesReceiptDelete")
+            {
+                divSalesReceiptDelete.Visible = true;
+            }
+            if (ddlSalesReceiptOptions.SelectedValue == "ReadAllSalesReceipts")
+            {
+                divSalesReceipts.Visible = true;
+            }
+        }
+
+        protected void btnCreateSalesReceipt_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string responseText = "";
+                string uri = string.Format("https://{0}/v3/company/{1}/salesReceipt", qboBaseUrl, Session["realmId"]);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/salesReceipts/1/bank-accounts/";
+                string body = "";
+                CreateSalesReceiptReq ccObj = new CreateSalesReceiptReq();
+                ccObj.Line = new List<CreateSalesReceiptReqLine>();
+                CreateSalesReceiptReqLine lineObj = new CreateSalesReceiptReqLine();
+
+                body = JsonConvert.SerializeObject(ccObj);
+                // send the request
+                responseText = POSTQBAPICall(uri, body);
+                if (responseText != null && responseText != "")
+                {
+                    //CreateSalesReceiptRes ccResObj = new CreateSalesReceiptRes();
+                    //ccResObj = JsonConvert.DeserializeObject<CreateSalesReceiptRes>(responseText);
+                    //if (ccResObj != null)
+                    //{
+                    //    if (ccResObj.SalesReceipt != null && ccResObj.SalesReceipt.Id != null && ccResObj.SalesReceipt.Id != "")
+                    //    {
+                    //        //SalesReceipt Created Successfully
+                    //        divCreateSalesReceipt.Visible = false;
+
+                    //        lblMessage.Text = "SalesReceipt Created Successfully";
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    lblMessage.Text = responseText;
+                    //}
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnGetSalesReceiptById_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string SalesReceiptId = txtSalesReceiptId.Text;
+                string responseText = "";
+                string uri = string.Format("https://{0}/v3/company/{1}/salesReceipt/{2}", qboBaseUrl, Session["realmId"], SalesReceiptId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/salesReceipts/1/bank-accounts/";
+
+                // send the request
+                responseText = GETQBAPICall(uri);
+                if (responseText != null && responseText != "")
+                {
+                    SalesReceiptByIdRes ccResObj = new SalesReceiptByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<SalesReceiptByIdRes>(responseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.SalesReceipt != null && ccResObj.SalesReceipt.Id != null && ccResObj.SalesReceipt.Id != "")
+                        {
+                            lblMessage.Text = "Customer  Name For SalesReceipt: " + ccResObj.SalesReceipt.CustomerRef.name;
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = responseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnUpdateSalesReceipt_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string SalesReceiptId = txtUCSalesReceiptId.Text;
+                string firstresponseText = "";
+                string firsturi = string.Format("https://{0}/v3/company/{1}/salesReceipt/{2}", qboBaseUrl, Session["realmId"], SalesReceiptId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/salesReceipts/1/bank-accounts/";
+
+                // send the request
+                firstresponseText = GETQBAPICall(firsturi);
+                if (firstresponseText != null && firstresponseText != "")
+                {
+                    SalesReceiptByIdRes ccResObj = new SalesReceiptByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<SalesReceiptByIdRes>(firstresponseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.SalesReceipt != null && ccResObj.SalesReceipt.Id != null && ccResObj.SalesReceipt.Id != "")
+                        {
+                            string responseText = "";
+                            string uri = string.Format("https://{0}/v3/company/{1}/salesReceipt", qboBaseUrl, Session["realmId"]);
+                            //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/salesReceipts/1/bank-accounts/";
+                            string body = "";
+                            UpdateSalesReceiptReq ccObj = new UpdateSalesReceiptReq();
+
+                            //Pass Other Parameters if needed.
+
+                            body = JsonConvert.SerializeObject(ccObj);
+                            // send the request
+                            responseText = POSTQBAPICall(uri, body);
+                            if (responseText != null && responseText != "")
+                            {
+                                lblMessage.Text = "SalesReceipt Updated Successfully.";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = firstresponseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnSalesReceiptDelete_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string SalesReceiptId = txtVDSalesReceiptId.Text;
+                string firstresponseText = "";
+                string firsturi = string.Format("https://{0}/v3/company/{1}/salesReceipt/{2}", qboBaseUrl, Session["realmId"], SalesReceiptId);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/salesReceipts/1/bank-accounts/";
+
+                // send the request
+                firstresponseText = GETQBAPICall(firsturi);
+                if (firstresponseText != null && firstresponseText != "")
+                {
+                    SalesReceiptByIdRes ccResObj = new SalesReceiptByIdRes();
+                    ccResObj = JsonConvert.DeserializeObject<SalesReceiptByIdRes>(firstresponseText);
+                    if (ccResObj != null)
+                    {
+                        if (ccResObj.SalesReceipt != null && ccResObj.SalesReceipt.Id != null && ccResObj.SalesReceipt.Id != "")
+                        {
+                            string responseText = "";
+                            string uri = string.Format("https://{0}/v3/company/{1}/salesReceipt?operation=delete", qboBaseUrl, Session["realmId"]);
+                            //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/salesReceipts/1/bank-accounts/";
+                            string body = "";
+
+                            SalesReceiptDeleteReq ccObj = new SalesReceiptDeleteReq();
+                            ccObj.Id = ccResObj.SalesReceipt.Id;
+                            ccObj.SyncToken = ccResObj.SalesReceipt.SyncToken;
+
+                            //Other Fields
+
+                            body = JsonConvert.SerializeObject(ccObj);
+                            // send the request
+                            responseText = POSTQBAPICall(uri, body);
+                            if (responseText != null && responseText != "")
+                            {
+                                lblMessage.Text = "SalesReceipt made inactive successfully";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lblMessage.Text = firstresponseText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        protected void btnGetSalesReceipts_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<SalesReceiptsSummary> salesReceiptList = new List<SalesReceiptsSummary>();
+                salesReceiptList = GetSalesReceipts();
+                if (salesReceiptList != null && salesReceiptList.Count > 0)
+                {
+                    gvwSalesReceipts.DataSource = salesReceiptList;
+                    gvwSalesReceipts.DataBind();
+                }
+                return;
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        public List<SalesReceiptsSummary> GetSalesReceipts()
+        {
+            string responseText = "";
+            List<SalesReceiptsSummary> salesReceiptList = new List<SalesReceiptsSummary>();
+            try
+            {
+                string query = "Select * from SalesReceipt startposition 1 maxresults 5";
+                // build the  request
+                string encodedQuery = WebUtility.UrlEncode(query);
+
+                //add qbobase url and query
+                string uri = string.Format("https://{0}/v3/company/{1}/query?query={2}", qboBaseUrl, Session["realmId"], encodedQuery);
+                //string uri = "https://sandbox.api.intuit.com/quickbooks/v4/salesReceipts/1/bank-accounts/";
+                // send the request
+                responseText = GETQBAPICall(uri);
+                if (responseText != null && responseText != "")
+                {
+                    ReadAllSalesReceiptRes custObj = JsonConvert.DeserializeObject<ReadAllSalesReceiptRes>(responseText);
+
+                    foreach (var item in custObj.QueryResponse.SalesReceipt)
+                    {
+                        SalesReceiptsSummary salesReceiptObj = new SalesReceiptsSummary();
+                        salesReceiptObj.id = item.Id;
+                        salesReceiptObj.txndate = item.TxnDate;
+                        salesReceiptList.Add(salesReceiptObj);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            return salesReceiptList;
+        }
+
+        #endregion
     }
 
     public static class ResponseHelper
